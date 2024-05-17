@@ -37,7 +37,7 @@ xi = np.linspace(min(x), max(x), 500)
 yi = np.linspace(min(y), max(y), 500)  
 Xi, Yi = np.meshgrid(xi, yi)
 
-
+#méthode cubique pour interpolation (courbe de surface continue) + turning Z into a 2D element 
 Zi = griddata((x, y), z, (Xi, Yi), method='cubic')
 
 
