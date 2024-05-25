@@ -1,5 +1,6 @@
 import sql_insert
 import csv
+import json
 
 db = sql_insert.ouvrir_connexion_bd()
 
@@ -13,10 +14,17 @@ def insert_frequency_table():
                 int_freq = int(frequency)
                 sql_insert.ajouter_mesure(db, int_freq)
 
+ 
+def insert_frequency_table_from_json():
+    with open('frequencies.json', 'r', encoding='utf-8') as file:
+        list_freq = json.load(file)
+        for freq in list_freq:
+            sql_insert.ajouter_frequence(db, freq)
+        
                 
 
 
-insert_frequency_table()
+insert_frequency_table_from_json()
 
 
 sql_insert.fermer_connexion_bd(db)

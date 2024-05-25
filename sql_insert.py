@@ -45,7 +45,7 @@ def ouvrir_connexion_bd():
                 port=3306,
                 user="G221_D",     # à compléter
                 password="G221_D",  
-                database="G221_D_BD1"   # à compléter
+                database="G221_D_BD3"   # à compléter
             )
     except Exception as e:
         if type(e) == NameError and str(e).startswith("name 'mysql'"):
@@ -92,6 +92,15 @@ def ajouter_mesure(connexion_bd, id_mesure,id_serie, temp, humid, x, y):
     try:
         cursor = connexion_bd.cursor()
         cursor.execute("INSERT INTO MESURE  (IdMesure, IdSerie, temperature, humidite, positionX, positionY, dateMesure) VALUES (%s, %s, %s, %s, %s, %s, %s)", [ id_mesure, id_serie, temp, humid, x, y, datetime.now()])
+        connexion_bd.commit()
+    except Exception as e:
+        print("MySQL [INSERTION ERROR]")
+        print(e)
+
+def ajouter_frequence(connexion_bd, frequence):
+    try:
+        cursor = connexion_bd.cursor()
+        cursor.execute("INSERT INTO FREQUENCE (frequence) VALUES (%s)", [frequence])
         connexion_bd.commit()
     except Exception as e:
         print("MySQL [INSERTION ERROR]")
