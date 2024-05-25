@@ -1,1 +1,1 @@
-
+SHOW PROCESSLIST; 

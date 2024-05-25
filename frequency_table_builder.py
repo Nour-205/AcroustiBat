@@ -18,8 +18,11 @@ def insert_frequency_table():
 def insert_frequency_table_from_json():
     with open('frequencies.json', 'r', encoding='utf-8') as file:
         list_freq = json.load(file)
+        print("loaded")
+        cursor = db.cursor()
         for freq in list_freq:
-            sql_insert.ajouter_frequence(db, freq)
+            sql_insert.ajouter_frequence(cursor, db, freq)
+        cursor.close()
         
                 
 

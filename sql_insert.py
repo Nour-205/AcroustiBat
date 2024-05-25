@@ -97,9 +97,9 @@ def ajouter_mesure(connexion_bd, id_mesure,id_serie, temp, humid, x, y):
         print("MySQL [INSERTION ERROR]")
         print(e)
 
-def ajouter_frequence(connexion_bd, frequence):
+def ajouter_frequence(cursor, connexion_bd, frequence):
     try:
-        cursor = connexion_bd.cursor()
+        
         cursor.execute("INSERT INTO FREQUENCE (frequence) VALUES (%s)", [frequence])
         connexion_bd.commit()
     except Exception as e:
