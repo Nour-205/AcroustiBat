@@ -1,16 +1,15 @@
 import csv
 import json 
+import sql_insert
 
-l = []
+db = sql_insert.ouvrir_connexion_bd()
 
-def insert_frequency_table():
-    with open('frequencies.csv', 'r', encoding='utf-8') as file:
-        reader = csv.reader(file, delimiter=',')
-        for line in reader: 
-            for ch in line: 
-                frequency = float(ch)
-                int_freq = int(frequency)
-                l.append(int_freq)
-    json.dump(l, open('frequencies.json', 'w'))
+def insert_Lieu(db, batiment, salle):
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO LIEU (nomBatiment, numeroSalle) VALUES ( %s, %s)", [batiment, salle])
+    db.commit()
+    cursor.close()
 
-insert_frequency_table()
+insert_Lieu(db, "B1", "1")
+
+sql_insert.fermer_connexion_bd(db)
