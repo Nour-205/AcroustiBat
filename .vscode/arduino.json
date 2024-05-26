@@ -1,0 +1,6 @@
+{
+    "configuration": "JTAGAdapter=default,PSRAM=disabled,FlashMode=qio,FlashSize=4M,LoopCore=1,EventsCore=1,USBMode=hwcdc,CDCOnBoot=default,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,PartitionScheme=default,CPUFreq=240,UploadSpeed=921600,DebugLevel=none,EraseFlash=none",
+    "board": "esp32:esp32:esp32s3",
+    "sketch": "arduino/P2I2_working_v2/P2I2_working_v2.ino",
+    "port": "/dev/tty.usbserial-0001"
+}
