@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import csv
-import sql_insert
+import sql_insertRime as sql_insert
 import datetime
 import json
 
@@ -42,9 +42,12 @@ salle = input("Enter the room number: ")
 
 #check if place in database
 check, id_lieu = sql_insert.check_lieu(connexion_bd, batiment, salle)
+print(id_lieu)
 
 if check == False:
-    id_lieu = sql_insert.ajouter_lieu(connexion_bd, batiment, salle)
+    sql_insert.ajouter_lieu(connexion_bd, batiment, salle)
+    id_lieu = sql_insert.get_id_lieu(connexion_bd, batiment, salle)
+    print(id_lieu)
 
 #get series id max 
 
@@ -52,7 +55,7 @@ series_id = sql_insert.get_series_id(connexion_bd)
 
 #insert series +1  into database
 
-sql_insert.ajouter_serie(connexion_bd, series_id + 1, id_lieu)
+sql_insert.ajouter_serie(connexion_bd, id_lieu)
 
 x = 0 
 
@@ -145,7 +148,7 @@ while serie:
 
         # insert distance/temperature/humidity into sql database and measurement id in the table
 
-        sql_insert.ajouter_mesure(connexion_bd, measurement_id + 1,series_id +1,temperature[0], humidity[0], x, y)
+        sql_insert.ajouter_mesure(connexion_bd,series_id +1,temperature[0], humidity[0], x, y)
 
 
         # insert fft coefficients into sql database
