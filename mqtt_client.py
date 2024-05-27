@@ -65,7 +65,7 @@ while serie:
 
     # ask user if they want to continue the series
     continuer = input("Do you want to continue the series? (y/n) : ")
-    if continuer == "no":
+    if continuer == "n":
         serie = False
         print("series ended")
         client.disconnect()
@@ -74,7 +74,7 @@ while serie:
         break
 
     change_y = input("Do you want to change the value of y? (y/n) : ")
-    if  change_y == "yes":
+    if  change_y == "y":
         y.append(input("Enter the value of y: "))
         x = 0
 

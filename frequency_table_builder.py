@@ -1,9 +1,9 @@
 import csv
 import json
 
-import sql_insert_ancien
+import sql_insert
 
-db = sql_insert_ancien.ouvrir_connexion_bd()
+db = sql_insert.ouvrir_connexion_bd()
 
 # insert into frequency table the frequencies from the csv file
 def insert_frequency_table_from_json():
@@ -32,6 +32,6 @@ def insert_frequency_table():
 insert_frequency_table_from_json()
 
 
-sql_insert_ancien.fermer_connexion_bd(db)
+sql_insert.fermer_connexion_bd(db)
 print("=> End of the program")
             
