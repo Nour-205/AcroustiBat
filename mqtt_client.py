@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import csv
-import sql_insertRime as sql_insert
+import sql_insert
 import datetime
 import json
 

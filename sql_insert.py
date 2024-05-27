@@ -85,52 +85,59 @@ def ajouter_mesures_depuis_fichier_csv(connexion_bd, chemin_vers_fichier):
             numero = int(ligne[0]) 
             mesure = float(ligne[1])  # à compléter
             maintenant = datetime.now()
-            ajouter_mesure(connexion_bd, numero, maintenant, mesure)   # à compléter
+            #ajouter_mesure(connexion_bd, numero, maintenant, mesure)   # à compléter
+    pass 
 
 
-def ajouter_mesure(connexion_bd, id_mesure,id_serie, temp, humid, x, y):
+def ajouter_mesure(connexion_bd,id_serie, temp, humid, x, y):
     try:
         cursor = connexion_bd.cursor()
-        cursor.execute("INSERT INTO MESURE  (IdMesure, IdSerie, temperature, humidite, positionX, positionY, dateMesure) VALUES (%s, %s, %s, %s, %s, %s, %s)", [ id_mesure, id_serie, temp, humid, x, y, datetime.now()])
+        cursor.execute("INSERT INTO MESURE  (IdSerie, temperature, humidite, positionX, positionY, dateMesure) VALUES (%s, %s, %s, %s, %s, %s)", [id_serie, temp, humid, x, y, datetime.now()])
         connexion_bd.commit()
+        cursor.close()
     except Exception as e:
         print("MySQL [INSERTION ERROR]")
         print(e)
 
 def ajouter_frequence(cursor, connexion_bd, frequence):
-    try:
-        
+    try:  
         cursor.execute("INSERT INTO FREQUENCE (frequence) VALUES (%s)", [frequence])
         connexion_bd.commit()
     except Exception as e:
         print("MySQL [INSERTION ERROR]")
         print(e)
 
+
 def check_lieu(connexion_bd, batiment, salle):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT IdLieu FROM LIEU WHERE nomBatiment = %s AND numeroSalle = %s", [batiment, salle])
-    if cursor.fetchone() is not None:
-        return True, cursor.fetchone()
+    id = cursor.fetchone()
+    cursor.close()
+    if id is not None:
+
+        return True, id[0]
     else:
         return False, None
 
     
 def ajouter_lieu(connexion_bd, batiment, salle):
-    # trouver id max 
-    cursor1 = connexion_bd.cursor()
-    cursor1.execute("SELECT MAX(IdLieu) FROM LIEU")
-    id = cursor1.fetchone()[0]
-    if id is None:
-        id = 0
     cursor = connexion_bd.cursor()
-    cursor.execute("INSERT INTO LIEU (IdLieu, nomBatiment, numeroSalle) VALUES (%s, %s, %s)", [id+1, batiment, salle])
+    cursor.execute("INSERT INTO LIEU (nomBatiment, numeroSalle) VALUES (%s, %s)", [batiment, salle])
     connexion_bd.commit()
+    cursor.close()
+
+def get_id_lieu(connexion_bd, batiment, salle):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT IdLieu FROM LIEU WHERE nomBatiment = %s AND numeroSalle = %s", [batiment, salle])
+    id = cursor.fetchone()[0]
+    cursor.close()
     return id
 
 def get_series_id(connexion_bd):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT MAX(IdSerie) FROM SERIE")
     id = cursor.fetchone()[0]
+    cursor.close()
     if id is None:
         id = 0
     return id
@@ -139,21 +146,23 @@ def get_measurement_id(connexion_bd):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT MAX(IdMesure) FROM MESURE")
     id = cursor.fetchone()[0]
+    cursor.close()
     if id is None:
         id = 0
     return id
 
-def ajouter_serie(connexion_bd, id_serie, id_lieu):
+def ajouter_serie(connexion_bd ,id_lieu):
     cursor = connexion_bd.cursor()
-    cursor.execute("INSERT INTO SERIE (IdSerie, datejour,IdLieu ) VALUES (%s, %s, %s)", [id_serie, datetime.now(), id_lieu])
+    cursor.execute("INSERT INTO SERIE (datejour,IdLieu ) VALUES (%s, %s)", [datetime.now(), id_lieu])
     connexion_bd.commit()
+    cursor.close()
 
 def ajouter_mesure_fft(connexion_bd, id_mesure, liste_frequence, liste_amplitude):
-    for i in range(len(liste_frequence)):
-        cursor = connexion_bd.cursor()
-        cursor.execute("INSERT INTO COEFFICIENT (IdMesure, frequence, coefficient) VALUES (%s, %s, %s)", [id_mesure, liste_frequence[i], liste_amplitude[i]])
-        connexion_bd.commit()
-
+    cursor = connexion_bd.cursor()
+    insert_data = [(id_mesure, liste_frequence[i], liste_amplitude[i]) for i in range(len(liste_frequence))]
+    cursor.executemany("INSERT INTO COEFFICIENT (IdMesure, frequence, coefficient) VALUES (%s, %s, %s)", insert_data)
+    connexion_bd.commit()
+    cursor.close()
     
 
 
