@@ -5,6 +5,12 @@ import datetime
 import json
 
 
+    
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to broker")
+    else:
+        print(f"Connection failed with error code {rc}")
 # Create a client instance
 client = mqtt.Client()
 
@@ -59,13 +65,7 @@ x = 0
 y=[]
 i =0 
 while serie:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to broker")
-        else:
-            print(f"Connection failed with error code {rc}")
-
-
+    client.connect("localhost", 1883, 60)
     # ask user if they want to continue the series
     continuer = input("Do you want to continue the series? (y/n) : ")
     if continuer == "n":
