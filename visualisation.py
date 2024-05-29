@@ -3,6 +3,8 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 import numpy as np
 from scipy.interpolate import griddata
+from tkinter import Tk, Frame, Button
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 
@@ -41,7 +43,6 @@ Xi, Yi = np.meshgrid(xi, yi)
 Zi = griddata((x, y), z, (Xi, Yi), method='cubic')
 
 
-
 fig = plt.figure()
 axe = fig.add_subplot(111, projection='3d')
 surface = axe.plot_surface(Xi, Yi, Zi, cmap=cm.coolwarm)
@@ -55,5 +56,18 @@ plt.clabel("amplitude")
 plt.show()
 
 
+fig = plt.figure()
+fig.suptitle('boxplot de la gamme de fréquences', fontsize=14, fontweight='bold')
 
+ax = fig.add_subplot(111)
+c = 'blue'
+box = ax.boxplot(z, patch_artist = True)
+
+colors = ['lightblue', 'lightgreen']
+for patch, color in zip(box['boxes'], colors):
+    patch.set_facecolor(color)
+
+ax.set_ylabel('amplitudes')
+
+plt.show()
 
