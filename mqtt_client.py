@@ -65,7 +65,7 @@ x = 0
 y=[]
 i =0 
 while serie:
-    client.connect("localhost", 1883, 60)
+
     # ask user if they want to continue the series
     continuer = input("Do you want to continue the series? (y/n) : ")
     if continuer == "n":
@@ -75,6 +75,17 @@ while serie:
         client.loop_stop()
         print("disconnected")
         break
+    else : 
+        client.connect("localhost", 1883, 60)
+        client.subscribe("rick/astley/measure")
+        client.subscribe("rick/astley/fft")
+        client.subscribe("rick/astley/distance")
+        client.subscribe("rick/astley/frequency")
+        client.subscribe("rick/astley/frequencies")
+        client.subscribe("rick/astley/humidity")
+        client.subscribe("rick/astley/temperature")
+        client.subscribe("rick/astley/stop")
+
 
     change_y = input("Do you want to change the value of y? (y/n) : ")
     if  change_y == "y":
