@@ -5,7 +5,32 @@ import datetime
 import json
 
 
+    
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to broker")
+    else:
+        print(f"Connection failed with error code {rc}")
+# Create a client instance
+client = mqtt.Client()
 
+# Set the on_connect callback
+client.on_connect = on_connect
+
+# Connect to the Mosquitto broker
+client.connect("localhost", 1883, 60)
+
+
+# Subscribe to the topic "my/test/topic"
+
+client.subscribe("rick/astley/measure")
+client.subscribe("rick/astley/fft")
+client.subscribe("rick/astley/distance")
+client.subscribe("rick/astley/frequency")
+client.subscribe("rick/astley/frequencies")
+client.subscribe("rick/astley/humidity")
+client.subscribe("rick/astley/temperature")
+client.subscribe("rick/astley/stop")
 
 #  establish connection with sql database
 
@@ -25,44 +50,22 @@ if check == False:
     print(id_lieu)
 
 #get series id max 
-
 series_id = sql_insert.get_series_id(connexion_bd)
 
 #insert series +1  into database
+ask_series = input("Do you want to add a new series? (y/n) : ")
 
-sql_insert.ajouter_serie(connexion_bd, id_lieu)
+if ask_series == "y":
+    sql_insert.ajouter_serie(connexion_bd, id_lieu)
+    series_id += 1
+else : 
+    print("no series added")
 
 x = 0 
 y=[]
 i =0 
 while serie:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to broker")
-        else:
-            print(f"Connection failed with error code {rc}")
-
-    # Create a client instance
-    client = mqtt.Client()
-
-    # Set the on_connect callback
-    client.on_connect = on_connect
-
-    # Connect to the Mosquitto broker
     client.connect("localhost", 1883, 60)
-
-
-    # Subscribe to the topic "my/test/topic"
-
-    client.subscribe("rick/astley/measure")
-    client.subscribe("rick/astley/fft")
-    client.subscribe("rick/astley/distance")
-    client.subscribe("rick/astley/frequency")
-    client.subscribe("rick/astley/frequencies")
-    client.subscribe("rick/astley/humidity")
-    client.subscribe("rick/astley/temperature")
-    client.subscribe("rick/astley/stop")
-
     # ask user if they want to continue the series
     continuer = input("Do you want to continue the series? (y/n) : ")
     if continuer == "n":
@@ -150,7 +153,7 @@ while serie:
 
         # insert distance/temperature/humidity into sql database and measurement id in the table
 
-        sql_insert.ajouter_mesure(connexion_bd,series_id +1,temperature[i], humidity[i], x, y[i])
+        sql_insert.ajouter_mesure(connexion_bd,series_id  ,temperature[i], humidity[i], x, y[i])
 
 
         # insert fft coefficients into sql database
