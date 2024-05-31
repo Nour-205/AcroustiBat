@@ -103,7 +103,6 @@ class fenetre(tk.Tk):
     def recuperer_liste(self, val):
         self.liste = self.coefs_x_y[int(val)]
         self.plot3d()
-        self.plotbox()
         
 
     
