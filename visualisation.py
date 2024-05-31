@@ -36,17 +36,26 @@ class fenetre(tk.Tk):
         self.fermer_connexion_bd(bd)
         
 
-        self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 50, command=self.recuperer_liste)
-        self.scale.bind("<ButtonRelease-1>", self.recuperer_liste)
+        self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 50, command=self.update_plot)
+        self.scale.bind("<ButtonRelease-1>", self.update_plot)
         self.scale.pack(side=tk.TOP, fill=tk.X)
-        self.recuperer_liste(None)
+
+
+        self.plot_type = tk.IntVar()
+        self.plot_type.set(0)  # Default to 3D plot
+        rb_3d = tk.Radiobutton(self, text="3D Plot", variable=self.plot_type, value=0, command=self.update_plot)
+        rb_box = tk.Radiobutton(self, text="Box Plot", variable=self.plot_type, value=1, command=self.update_plot)
+        rb_3d.pack(side=tk.LEFT, padx=5)
+        rb_box.pack(side=tk.LEFT, padx=5)
+
+        self.update_plot(None)
 
         label_lieu = Button(frame, text=f"Lieu : {self.lieu} \n Date : {self.dateJour} \n Temperature : {self.temperature} °C \n Humidité : {self.humidite} % " ,bg = "#f7f3e1", font = ("Helvetica", 20))
         label_lieu.pack(side="top", padx=20, pady=20, expand=True)
-        Button1 = Button(frame, text="Show 3D Plot", command=self.plot3d, width=20, height=2, bg='lightpink')
-        Button1.pack(side="left", padx=20, pady=20, expand=True)
-        Button2 = Button(frame, text="Show Box Plot", command=self.plotbox, width=20, height=2, bg="lightblue")
-        Button2.pack(side="left", padx=20, pady=20, expand=True)
+        # Button1 = Button(frame, text="Show 3D Plot", command=self.plot3d, width=20, height=2, bg='lightpink')
+        # Button1.pack(side="left", padx=20, pady=20, expand=True)
+        # Button2 = Button(frame, text="Show Box Plot", command=self.plotbox, width=20, height=2, bg="lightblue")
+        # Button2.pack(side="left", padx=20, pady=20, expand=True)
 
     def recuperer_id_serie(self, bd):
         cursor = bd.cursor()
@@ -90,13 +99,17 @@ class fenetre(tk.Tk):
                 print("***********************")
             cursor.close()
 
-
-
-    def recuperer_liste(self, event):
+    def update_plot(self, event = None):
         val = self.scale.get()
         self.liste = self.coefs_x_y[int(val)]
-        self.plot3d()
-        
+
+        if self.plot_type.get() == 0:
+            self.plot3d()
+        else:
+            self.plotbox()
+
+
+
     
     def create3dplot(self):
         liste = self.liste
@@ -125,8 +138,8 @@ class fenetre(tk.Tk):
             x = x + np.random.normal(0, 1e-5, x.shape)
 
         # augmentation de nombre de points pour une meilleure visualisation (courbe continue)
-        xi = np.linspace(min(x, default = 0), max(x, default=0) , 500)  
-        yi = np.linspace(min(y, default = 0), max(y), 500)  
+        xi = np.linspace(min(x, default = 0), max(x, default=0) , 300)  
+        yi = np.linspace(min(y, default = 0), max(y), 300)  
         Xi, Yi = np.meshgrid(xi, yi)
 
         #méthode cubique pour interpolation (courbe de surface continue) + turning Z into a 2D element 
