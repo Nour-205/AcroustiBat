@@ -8,15 +8,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 import mysql.connector as mysql
 
-#visualisation
-# graphe des coordonnées x et y des points en fonction de la fréquence 
-
-#on reçoit une liste de tuples (coeff, x, y):
-
-#test: 
-#liste = [(100,1,5), (0,0,1), (4,5,10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100,2,1),(480,2,2),(808,1,8) ,(100, 1, 5), (0, 0, 1), (4, 5, 10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100, 2, 1), (480, 2, 2), (808, 1, 8), (100, 1, 5), (0, 0, 1), (4, 5, 10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100, 2, 1), (480, 2, 2), (808, 1, 8), (100, 1, 5), (0, 0, 1), (4, 5, 10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100, 2, 1), (480, 2, 2), (808, 1, 8), (100, 1, 5), (0, 0, 1), (4, 5, 10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100, 2, 1), (480, 2, 2), (808, 1, 8), (100, 1, 5), (0, 0, 1), (4, 5, 10), (130, 3, 9), (200, 0, 0), (400, 1, 0), (600, 0, 1), (760, 1, 1), (100, 2, 1), (480, 2, 2), (808, 1, 8), (100,3, 1)]
-
-
 class fenetre(tk.Tk):
 
     __slots__ = [
@@ -46,8 +37,9 @@ class fenetre(tk.Tk):
         
 
         self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 50, command=self.recuperer_liste)
+        self.scale.bind("<ButtonRelease-1>", self.recuperer_liste)
         self.scale.pack(side=tk.TOP, fill=tk.X)
-        self.recuperer_liste(0)
+        self.recuperer_liste(None)
 
         label_lieu = Button(frame, text=f"Lieu : {self.lieu} \n Date : {self.dateJour} \n Temperature : {self.temperature} °C \n Humidité : {self.humidite} % " ,bg = "#f7f3e1", font = ("Helvetica", 20))
         label_lieu.pack(side="top", padx=20, pady=20, expand=True)
@@ -91,7 +83,7 @@ class fenetre(tk.Tk):
             cursor.execute("SELECT AVG(temperature), AVG(humidite) FROM MESURE WHERE idSerie = %s", [self.idSerie])
             for temp, hum in cursor:
                 self.temperature = round(temp, 2)
-                self.humidite = hum
+                self.humidite = round(hum, 2)
             if self.coefs_x_y != dict() and self.temperature != -1 and self.humidite != -1:
                 print("***********************")
                 print("Données récupérées !")
@@ -100,12 +92,11 @@ class fenetre(tk.Tk):
 
 
 
-    def recuperer_liste(self, val):
+    def recuperer_liste(self, event):
+        val = self.scale.get()
         self.liste = self.coefs_x_y[int(val)]
         self.plot3d()
         
-
-    
     
     def create3dplot(self):
         liste = self.liste
@@ -167,7 +158,6 @@ class fenetre(tk.Tk):
         fig.suptitle('boxplot de la gamme de fréquences', fontsize=14, fontweight='bold')
 
         ax = fig.add_subplot(111)
-        c = 'blue'
         box = ax.boxplot(z, patch_artist = True)
         colors = ['lightblue', 'lightgreen']
         for patch, color in zip(box['boxes'], colors):
