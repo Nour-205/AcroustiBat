@@ -3,10 +3,11 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 import numpy as np
 from scipy.interpolate import griddata
-from tkinter import Tk, Frame, Button
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 import mysql.connector as mysql
+from tkinter import *
+
 
 class fenetre(tk.Tk):
 
@@ -36,17 +37,18 @@ class fenetre(tk.Tk):
         self.fermer_connexion_bd(bd)
         
 
-        self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 50, command=self.update_plot)
+        self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 10, width=20, activebackground='lightpink', label = 'choisir la gamme de fréquences',font = ('Helvetica', 10), command=self.update_plot)
         self.scale.bind("<ButtonRelease-1>", self.update_plot)
         self.scale.pack(side=tk.TOP, fill=tk.X)
-
-
         self.plot_type = tk.IntVar()
         self.plot_type.set(0)  # Default to 3D plot
+
+        #style = tk.Style()
+        #style.configure('TRadiobutton', foreground=[('disabled', 'grey'),('selected', 'lightpink'),('!selected', 'gray')])
         rb_3d = tk.Radiobutton(self, text="3D Plot", variable=self.plot_type, value=0, command=self.update_plot)
         rb_box = tk.Radiobutton(self, text="Box Plot", variable=self.plot_type, value=1, command=self.update_plot)
-        rb_3d.pack(side=tk.LEFT, padx=5)
-        rb_box.pack(side=tk.LEFT, padx=5)
+        rb_3d.pack(side=tk.LEFT, padx=10)
+        rb_box.pack(side=tk.LEFT, padx=10)
 
         self.update_plot(None)
 
@@ -72,8 +74,6 @@ class fenetre(tk.Tk):
             self.dateJour = date[0].strftime("%d/%m/%y")
         cursor.close()
     
-
-
 
     def recuperer_donnees(self, bd):
             cursor = bd.cursor()
@@ -107,8 +107,6 @@ class fenetre(tk.Tk):
             self.plot3d()
         else:
             self.plotbox()
-
-
 
     
     def create3dplot(self):
@@ -155,10 +153,11 @@ class fenetre(tk.Tk):
         axe.set_xlabel("coordonnée x")
         axe.set_ylabel("coordonnée y")
         axe.set_zlabel("amplitude")
-        axe.set_title("Amplitude en fonction des coordonnées x et y pour les fréquences de la gamme {gamme}")
+        axe.set_title("Amplitudes de la gamme de fréquences sélectionnée")
         return fig
     
     def createboxplot(self):
+        gamme = self.scale
         liste = self.liste
         z_data = []
         for tuple in liste : 
@@ -168,7 +167,7 @@ class fenetre(tk.Tk):
         z = np.array(z_data)
 
         fig = plt.figure()
-        fig.suptitle('boxplot de la gamme de fréquences', fontsize=14, fontweight='bold')
+        fig.suptitle('boxplot de la gamme de fréquences sélectionnée')
 
         ax = fig.add_subplot(111)
         box = ax.boxplot(z, patch_artist = True)
@@ -231,7 +230,7 @@ class fenetre(tk.Tk):
         fig = self.create3dplot()
         canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def plotbox(self):
         for widget in self.plot_frame.winfo_children():
@@ -239,7 +238,7 @@ class fenetre(tk.Tk):
         fig = self.createboxplot()
         canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 app = fenetre()
