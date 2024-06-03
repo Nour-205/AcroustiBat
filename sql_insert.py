@@ -162,8 +162,8 @@ def ajouter_mesure_fft(connexion_bd, id_mesure, liste_frequence, liste_amplitude
     insert_data = [(id_mesure, liste_frequence[i], liste_amplitude[i]) for i in range(len(liste_frequence))]
     cursor.executemany("INSERT INTO COEFFICIENT (IdMesure, frequence, coefficient) VALUES (%s, %s, %s)", insert_data)
     connexion_bd.commit()
-    cursor.close()
-    
+    cursor.close()  
+
 
 
 
