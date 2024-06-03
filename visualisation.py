@@ -81,11 +81,7 @@ class fenetre(tk.Tk):
             fmax = 100
             i = 0
             while fmax < 22101:
-                cursor.execute("SELECT AVG(c.coefficient), m.positionx, m.positiony FROM MESURE m, COEFFICIENT c WHERE m.idMesure = c.idMesure and m.idSerie = %s and %s <= c.frequence and c.frequence <= %s GROUP BY m.positionx, m.positiony", [self.idSerie, fmin, fmax])
-                liste = []
-                for coef, x, y in cursor:
-                    liste.append((float(coef),x,y))
-                self.coefs_x_y[i] = liste
+                self.coefs_x_y[i] = cursor.execute("SELECT AVG(c.coefficient), m.positionx, m.positiony FROM MESURE m, COEFFICIENT c WHERE m.idMesure = c.idMesure and m.idSerie = %s and %s <= c.frequence and c.frequence <= %s GROUP BY m.positionx, m.positiony", [self.idSerie, fmin, fmax])
                 i += 1
                 fmin = fmax
                 fmax += 100
@@ -112,16 +108,7 @@ class fenetre(tk.Tk):
     def create3dplot(self):
         liste = self.liste
         gamme = self.scale
-        x_data = []
-        y_data = []
-        z_data = []
-        for tuple in liste : 
-            x = tuple[1]
-            y = tuple[2]
-            z = tuple[0]
-            x_data.append(x)
-            y_data.append(y)
-            z_data.append(z)
+        x_data, y_data, z_data = zip(*liste)
 
         #creation de arrays contenant les valeurs de x, y et z
         x = np.array(x_data)
