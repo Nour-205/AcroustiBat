@@ -7,6 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 import mysql.connector as mysql
 from tkinter import *
+from sklearn.preprocessing import StandardScaler
+from statistics import mean as avg
 
 
 class fenetre(tk.Tk):
@@ -35,29 +37,31 @@ class fenetre(tk.Tk):
         self.recuperer_id_serie(bd)
         self.recuperer_donnees(bd)
         self.fermer_connexion_bd(bd)
+
+        self.detecter_outliers_zscore()
         
 
-        self.scale = tk.Scale(self, from_=0, to=23, orient=tk.HORIZONTAL, length = 10, width=20, activebackground='lightpink', label = 'choisir la gamme de fréquences',font = ('Helvetica', 10), command=self.update_plot)
-        self.scale.bind("<ButtonRelease-1>", self.update_plot)
+        self.scale = tk.Scale(self, from_=0, to=220, orient=tk.HORIZONTAL, length = 600, width=20, activebackground='lightpink', label = 'Choisir la gamme de fréquences à étudier: ',font = ('Helvetica', 15), command=self.update_scale_label)
+        #self.scale.bind("<ButtonRelease-1>", self.update_scale_label)
         self.scale.pack(side=tk.TOP, fill=tk.X)
+        self.scale_label = tk.Label(self, text=f"Gamme de fréquences: {100* self.scale.get()} à {(100* self.scale.get())+100} Hz", font=('Helvetica', 15))
+        self.scale_label.pack(side=tk.TOP, fill=tk.X)
         self.plot_type = tk.IntVar()
         self.plot_type.set(0)  # Default to 3D plot
 
-        #style = tk.Style()
-        #style.configure('TRadiobutton', foreground=[('disabled', 'grey'),('selected', 'lightpink'),('!selected', 'gray')])
+       
         rb_3d = tk.Radiobutton(self, text="3D Plot", variable=self.plot_type, value=0, command=self.update_plot)
         rb_box = tk.Radiobutton(self, text="Box Plot", variable=self.plot_type, value=1, command=self.update_plot)
         rb_3d.pack(side=tk.LEFT, padx=10)
         rb_box.pack(side=tk.LEFT, padx=10)
 
         self.update_plot(None)
+        
 
-        label_lieu = Button(frame, text=f"Lieu : {self.lieu} \n Date : {self.dateJour} \n Temperature : {self.temperature} °C \n Humidité : {self.humidite} % " ,bg = "#f7f3e1", font = ("Helvetica", 20))
+        label_lieu = Button(frame, text=f"Lieu : {self.lieu} \n Date : {self.dateJour} \n Temperature : {self.temperature} °C \n Humidité : {self.humidite} % " ,bg = "#f7f3e1", font = ('Helvetica', 20))
         label_lieu.pack(side="top", padx=20, pady=20, expand=True)
-        # Button1 = Button(frame, text="Show 3D Plot", command=self.plot3d, width=20, height=2, bg='lightpink')
-        # Button1.pack(side="left", padx=20, pady=20, expand=True)
-        # Button2 = Button(frame, text="Show Box Plot", command=self.plotbox, width=20, height=2, bg="lightblue")
-        # Button2.pack(side="left", padx=20, pady=20, expand=True)
+
+    
 
     def recuperer_id_serie(self, bd):
         cursor = bd.cursor()
@@ -89,6 +93,11 @@ class fenetre(tk.Tk):
                 i += 1
                 fmin = fmax
                 fmax += 100
+                # for gamme in self.coefs_x_y.values():
+                #     moyenne = avg(coef)
+                #     for coef, x, y in gamme:
+                #         if coef > 10000 * moyenne:
+                #             self.coefs_x_y[i].remove((coef, x, y))                        
             cursor.execute("SELECT AVG(temperature), AVG(humidite) FROM MESURE WHERE idSerie = %s", [self.idSerie])
             for temp, hum in cursor:
                 self.temperature = round(temp, 2)
@@ -98,16 +107,30 @@ class fenetre(tk.Tk):
                 print("Données récupérées !")
                 print("***********************")
             cursor.close()
+   
+    def detecter_outliers_zscore(self):
+        for key in self.coefs_x_y.keys():
+            if not self.coefs_x_y[key]:
+                continue
+            coefficients = np.array([item[0] for item in self.coefs_x_y[key]]).reshape(-1, 1)
+            mean_value = np.mean(coefficients)
+            std_deviation = np.std(coefficients)
+            z_scores = np.abs((coefficients - mean_value) / std_deviation)
+            self.coefs_x_y[key] = [self.coefs_x_y[key][i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value]      
+        print(f"dico corrige : {self.coefs_x_y}")
+
 
     def update_plot(self, event = None):
         val = self.scale.get()
         self.liste = self.coefs_x_y[int(val)]
-
         if self.plot_type.get() == 0:
             self.plot3d()
         else:
             self.plotbox()
 
+    def update_scale_label(self, val):
+        self.scale_label.config(text=f"Gamme de fréquences: {100*int(val)} à {(100*int(val))+100} Hz")
+        self.update_plot()
     
     def create3dplot(self):
         liste = self.liste
