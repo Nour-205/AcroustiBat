@@ -2,6 +2,8 @@
 #include "Ultrasonic.h"
 #include "arduinoFFT.h"
 
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
 
@@ -51,15 +53,34 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 /*-----DONE-----*/
 
+/*-----SCREEN SETUP-----*/
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+unsigned long duration;
+/*-----DONE-----*/
 
 /*-----SETUP-----*/
 void setup() {
   Serial.begin(115200);
-  Serial.println("Test");
   
   if (!si7021_sensor.begin()) {
     Serial.println("Did not find Si7021 sensor!");
   }
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println("Screen error");
+  }
+  display.display();
+  display.setTextSize(2);      // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE); // Draw white text
+  display.setCursor(0, 0);     // Start at top-left corner
+  display.cp437(true);
+  display.clearDisplay();
+  display.println(F("starting..."));
+  display.display();
+  
   sampling_period_us = round(1000000*(1.0/samplingFrequency));
 
   WiFi.begin(ssid, password);
@@ -68,6 +89,11 @@ void setup() {
     Serial.println("Connecting to WiFi..");
     Serial.println(WiFi.status());
     Serial.println(WL_CONNECTED);
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println(F("Connecting"));
+    display.println("WiFi : " + String(WiFi.status()));
+    display.display();
   }
   
    client.setServer(mqtt_broker, mqtt_port);
@@ -76,23 +102,40 @@ void setup() {
        String client_id = "esp32-client-";
        client_id += String(WiFi.macAddress());
        Serial.printf("The client %s connects to the MQTT broker\n", client_id.c_str());
+       display.clearDisplay();
+       display.setCursor(0,0);
+       display.println(F("Connecting"));
+       display.println("MQTT");
+       display.display();
        if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) {
            Serial.println("Connected");
+           display.clearDisplay();
+           display.setCursor(0,0);
+           display.println("Done");
+           display.display();
        } else {
+           display.clearDisplay();
+           display.setCursor(0,0);
+           display.println(F("Connecting"));
+           display.println("MQTT : " + String(client.state()));
+           display.display();
            Serial.print("failed with state ");
            Serial.print(client.state());
            delay(2000);
        }
    }
+   
    // Publish and subscribe
    client.publish(topic, "Hi, I'm ESP32 ^^");
    client.subscribe("rick/astley/measure");
    client.subscribe("rick/astley/frequency");
   
   Serial.println("Ready :D");
+  duration = millis();
 }
 /*-----DONE-----*/
 
+/*-----CALLBACK FUNCTION-----*/
 void callback(char *topic, byte *payload, unsigned int length) {
   String top = topic;
   if (top == "rick/astley/frequency") {
@@ -102,6 +145,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     measure();
   }
 }
+/*-----DONE-----*/
 
 void measure() {
    /*-----ULTRASONIC-----*/
@@ -179,4 +223,12 @@ void sendData(float *vData, uint16_t bufferSize){
 
 void loop() {
    client.loop();
+   if (millis() - duration > 300) {
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println(F("Distance :"));
+    display.println(ultrasonic.read(), DEC);
+    display.display();
+    duration = millis();
+   }
 }
