@@ -9,9 +9,9 @@ import mysql.connector as mysql
 from tkinter import *
 from sklearn.preprocessing import StandardScaler
 from statistics import mean as avg
+from data_handler import DataHandler
 
-
-class fenetre(tk.Tk):
+class fenetre(tk.Tk, DataHandler):
 
     __slots__ = [
     "idSerie", "dateJour", "lieu", "coefs_x_y", "temperature", "humidite", "liste", 'scale'
@@ -20,6 +20,7 @@ class fenetre(tk.Tk):
 
     def __init__(self):
         tk.Tk.__init__(self)
+        DataHandler.__init__(self) 
         self.title("Visualisation")
         self.geometry("800x600")
         frame = tk.Frame(self)
@@ -38,7 +39,9 @@ class fenetre(tk.Tk):
         self.recuperer_donnees(bd)
         self.fermer_connexion_bd(bd)
 
+        self.save_data()
         self.detecter_outliers_zscore()
+
         
 
         self.scale = tk.Scale(self, from_=0, to=220, orient=tk.HORIZONTAL, length = 600, width=20, activebackground='lightpink', label = 'Choisir la gamme de fréquences à étudier: ',font = ('Helvetica', 15), command=self.update_scale_label)
@@ -117,7 +120,7 @@ class fenetre(tk.Tk):
             std_deviation = np.std(coefficients)
             z_scores = np.abs((coefficients - mean_value) / std_deviation)
             self.coefs_x_y[key] = [self.coefs_x_y[key][i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value]      
-        print(f"dico corrige : {self.coefs_x_y}")
+        #print(f"dico corrige : {self.coefs_x_y}")
 
 
     def update_plot(self, event = None):
