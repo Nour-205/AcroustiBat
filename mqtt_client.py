@@ -86,7 +86,7 @@ while serie:
         client.subscribe("rick/astley/temperature")
         client.subscribe("rick/astley/stop")
 
-
+    print(f"y is {y}")
     change_y = input("Do you want to change the value of y? (y/n) : ")
     if  change_y == "y":
         y.append(input("Enter the value of y: "))
