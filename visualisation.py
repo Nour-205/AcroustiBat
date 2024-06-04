@@ -95,12 +95,7 @@ class fenetre(tk.Tk, DataHandler):
                 self.coefs_x_y[i] = liste
                 i += 1
                 fmin = fmax
-                fmax += 100
-                # for gamme in self.coefs_x_y.values():
-                #     moyenne = avg(coef)
-                #     for coef, x, y in gamme:
-                #         if coef > 10000 * moyenne:
-                #             self.coefs_x_y[i].remove((coef, x, y))                        
+                fmax += 100                       
             cursor.execute("SELECT AVG(temperature), AVG(humidite) FROM MESURE WHERE idSerie = %s", [self.idSerie])
             for temp, hum in cursor:
                 self.temperature = round(temp, 2)

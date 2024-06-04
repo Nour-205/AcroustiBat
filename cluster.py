@@ -12,7 +12,7 @@ from statistics import mean as avg
 from sklearn.cluster import DBSCAN
 import data_handler  # Import the shared_data module
 from data_handler import DataHandler
-import pandas as pd
+
 
 
 
@@ -26,13 +26,14 @@ class ClusterWindow(tk.Toplevel, DataHandler):
         self.plot_frame = tk.Frame(self)
         self.plot_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.TRUE)
 
-        self.scale = 1
+        self.scale_clusters = {}
+
 
         self.load_data()  # Load data from file
         self.detecter_clusters_dbscan()  # Detect clusters using DBSCAN
 
         self.plot3d_clusters()
-        self.plot3d()
+
 
 
     def detecter_clusters_dbscan(self):
@@ -44,7 +45,7 @@ class ClusterWindow(tk.Toplevel, DataHandler):
             data = np.array(self.coefs_x_y[key])
             if data.shape[0] < 5:  # Not enough data to form clusters
                 continue
-            dbscan = DBSCAN(eps=0.5, min_samples=5)
+            dbscan = DBSCAN(eps=5, min_samples=5)
             labels = dbscan.fit_predict(data[:, :2])  # Use only x and y for clustering
             clusters = {}
             for label, point in zip(labels, data):
@@ -60,13 +61,15 @@ class ClusterWindow(tk.Toplevel, DataHandler):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         
-        for self.scale in self.coefs_x_y.keys():
-            colors = plt.cm.rainbow(np.linspace(0, 1, len(self.coefs_x_y[str(self.scale)])))
-
-            for (cluster, color) in zip(self.coefs_x_y[str(self.scale)].values(), colors):
+        for key in self.coefs_x_y.keys():
+            scale_clusters = self.coefs_x_y[key]
+            colors = plt.cm.rainbow(np.linspace(0, 1, len(scale_clusters)))
+            for (cluster, color) in zip(scale_clusters.values(), colors):
+                print(f"scale cluster values : {scale_clusters.values()}")
                 x_data = [item[1] for item in cluster]
                 y_data = [item[2] for item in cluster]
                 z_data = [item[0] for item in cluster]
+                print(f"Plotting cluster with {len(x_data)} points")
                 ax.scatter(x_data, y_data, z_data, color=color, s=10, alpha=0.5)
 
         ax.set_xlabel("coordonnée x")
@@ -78,8 +81,7 @@ class ClusterWindow(tk.Toplevel, DataHandler):
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def plot3d(self):
-        self.plot3d_clusters()
+
 
 
 
