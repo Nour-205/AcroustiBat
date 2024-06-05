@@ -62,7 +62,7 @@ else :
     print("no series added")
 
 x = 0 
-y=[]
+y=0
 i =0 
 while serie:
 
@@ -89,12 +89,17 @@ while serie:
     print(f"y is {y}")
     change_y = input("Do you want to change the value of y? (y/n) : ")
     if  change_y == "y":
-        y.append(input("Enter the value of y: "))
-        x = 0
+        y = int(input("Enter the value of y: "))
+        change_x = input("Do you want to change the value of x? (y/n) : ")
+        if change_x == "y":
+            x = int(input("Enter the value of x: "))
+        else:
+            x =0
 
 
     #get th id of the measurement
     measurement_id = sql_insert.get_measurement_id(connexion_bd)
+    print(measurement_id)
 
     l = []
     #ask user if they want to send a message 
@@ -164,7 +169,7 @@ while serie:
 
         # insert distance/temperature/humidity into sql database and measurement id in the table
 
-        sql_insert.ajouter_mesure(connexion_bd,series_id  ,temperature[i], humidity[i], x, y[i])
+        sql_insert.ajouter_mesure(connexion_bd,series_id  ,temperature[i], humidity[i], x, y)
 
 
         # insert fft coefficients into sql database
@@ -172,7 +177,7 @@ while serie:
         liste_frequence = json.load(open('frequencies.json', 'r'))
 
         fft_coef = sql_insert.detecter_outliers_zscore(fft_coef)
-
+        print(f"this is the measurement {measurement_id + 1}")
         sql_insert.ajouter_mesure_fft(connexion_bd, measurement_id + 1,liste_frequence, fft_coef)
 
         # close the connection with the database

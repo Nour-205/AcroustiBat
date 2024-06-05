@@ -172,7 +172,12 @@ def detecter_outliers_zscore(liste_amplitude):
     mean_value = np.mean(coefficients)
     std_deviation = np.std(coefficients)
     z_scores = np.abs((coefficients - mean_value) / std_deviation)
-    liste_amplitude = [liste_amplitude[i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value]
+    #liste_amplitude = [liste_amplitude[i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value else None]
+    for i in range(len(z_scores)):
+        if z_scores[i] > 3 or coefficients[i] > 500 * mean_value:
+            liste_amplitude[i] = None
+        else:
+            continue
     return liste_amplitude
 
 
