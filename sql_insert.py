@@ -6,6 +6,7 @@ from datetime import datetime
 from inspect import currentframe
 # Package MySQL Connector >> pip install mysql-connector-python
 import mysql.connector as mysql
+import numpy as np
 
 
 def lire_fichier_csv(chemin_vers_fichier):
@@ -166,16 +167,14 @@ def ajouter_mesure_fft(connexion_bd, id_mesure, liste_frequence, liste_amplitude
 
 
 
+def detecter_outliers_zscore(liste_amplitude):
+    coefficients = np.array(liste_amplitude).reshape(-1, 1)
+    mean_value = np.mean(coefficients)
+    std_deviation = np.std(coefficients)
+    z_scores = np.abs((coefficients - mean_value) / std_deviation)
+    liste_amplitude = [liste_amplitude[i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value]
+    return liste_amplitude
 
-
-if __name__ == "__main__":
-    bd = ouvrir_connexion_bd()
-
-
-
-
-    fermer_connexion_bd(bd)
-    print("=> Fin du Programme")
 
     
 
