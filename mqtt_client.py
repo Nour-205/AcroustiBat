@@ -171,6 +171,8 @@ while serie:
         
         liste_frequence = json.load(open('frequencies.json', 'r'))
 
+        fft_coef = sql_insert.detecter_outliers_zscore(fft_coef)
+
         sql_insert.ajouter_mesure_fft(connexion_bd, measurement_id + 1,liste_frequence, fft_coef)
 
         # close the connection with the database
