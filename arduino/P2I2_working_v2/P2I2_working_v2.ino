@@ -39,11 +39,11 @@ float temps;
 
 /*-----WIFI & MQTT-----*/
 // WiFi
-const char *ssid = "Nour"; // Enter your WiFi name
-const char *password ="test1234";  // Enter WiFi password
+char *ssid = "Rime"; // Enter your WiFi name
+const char *password ="raskolnikov";  // Enter WiFi password
 
 // MQTT Broker
-const char *mqtt_broker = "172.20.10.4";
+const char *mqtt_broker = "81.185.169.225";
 const char *topic   = "my/test/channel";
 const char *mqtt_username = "rickastley";
 const char *mqtt_password = "password";
