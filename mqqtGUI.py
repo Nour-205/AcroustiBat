@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import simpledialog
 import paho.mqtt.client as mqtt
 import sql_insert
 import json
@@ -54,26 +55,18 @@ class MQTTClientGUI:
 
     def on_message(self, client, userdata, msg):
         self.log_message(f"Received message on {msg.topic}: {msg.payload.decode()}")
-        self.handle_message(msg.topic, msg.payload.decode())
+        if msg.topic == "rick/astley/stop":
+            self.send_data()
+            print("disconnected")
+        if msg.topic == "rick/astley/humidity":
+            self.humidity.append(float(msg.payload.decode()))
+        if msg.topic == "rick/astley/temperature":
+            self.temperature.append(float(msg.payload.decode()))
+        if msg.topic == "rick/astley/distance":
+            self.distance.append(float(msg.payload.decode())) 
+        if msg.topic == "rick/astley/fft":
+            self.fft_coef.append(int(float(msg.payload.decode())))
 
-    def handle_message(self, topic, message):
-        # Implement your message handling logic here
-        # Example: Save message to database
-        print(f"Handling message from topic {topic}: {message}")
-        try:
-            # Assuming `sql_insert` module has functions to handle the message
-            # Example: sql_insert.process_message(topic, message)
-            if topic == "rick/astley/fft":
-                self.liste_coefficients.append(message.payload.decode())
-            # Add other topic handlers as needed
-            elif topic == "rick/astley/stop":
-                self.serie = False
-                sql_insert.ajouter_mesure(self.connexion_bd, self.id_mesure, self.series_id)
-                sql_insert.ajouter_mesure_fft(self.connexion_bd, self.id_mesure, self.liste_frequence, self.liste_amplitude)
-                self.log_message(f"Added measurement with ID: {self.id_mesure}")
-                self.id_mesure += 1
-        except Exception as e:
-            self.log_message(f"Error handling message: {e}")
 
     def log_message(self, message):
         self.messages_text.config(state='normal')
@@ -132,6 +125,8 @@ class MQTTClientGUI:
         self.serie = True
         self.batiment = building
         self.salle = room
+        self.x = 0
+        self.y = 0
 
     def disconnect(self):
         self.client.loop_stop()
@@ -141,9 +136,34 @@ class MQTTClientGUI:
         self.log_message("Disconnected from broker and database")
 
     def send_fft(self):
-        self.liste_coefficients = []
+        self.id_mesure = sql_insert.get_measurement_id(self.connexion_bd) + 1
+        self.humidity = []
+        self.temperature = []
+        self.distance = []
+        self.fft_coef = []
+        # ask if user wants to change the value  of y
+        ask_y = messagebox.askyesno("Y", "Do you want to change the value of y?")
+        if ask_y:
+            get_y_value = simpledialog.askinteger("Y Value", "Enter the value of y")
+            self.y = get_y_value
+            self.log_message(f"New Y added {self.y}")
+            ask_x = messagebox.askyesno("X", "Do you want to change the value of x?")
+            if ask_x:
+                get_x_value = simpledialog.askinteger("X Value", "Enter the value of x")
+                self.x = get_x_value
+                self.log_message(f"New X added {self.x}")
+            else:
+                self.log_message(f"X value not changed {self.x}")
+        else:
+            self.log_message(f"Y value not changed {self.y}")
         self.client.publish("rick/astley/measure", "get fft")
         self.log_message("Sent 'get fft' on channel 'measure'")
+    def send_data(self):
+        self.x += self.distance[0]
+        sql_insert.ajouter_mesure(self.connexion_bd, self.series_id, self.temperature[0],self.humidity[0], self.x, self.y)
+        sql_insert.ajouter_mesure_fft(self.connexion_bd, self.id_mesure, self.liste_frequence, self.fft_coef)
+        self.log_message(f"Added measurement with ID: {self.id_mesure}")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
