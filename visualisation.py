@@ -40,11 +40,10 @@ class fenetre(tk.Tk, DataHandler):
         self.fermer_connexion_bd(bd)
 
         self.save_data()
-        self.detecter_outliers_zscore()
 
         
 
-        self.scale = tk.Scale(self, from_=0, to=220, orient=tk.HORIZONTAL, length = 600, width=20, activebackground='lightpink', label = 'Choisir la gamme de fréquences à étudier: ',font = ('Helvetica', 15), command=self.update_scale_label)
+        self.scale = tk.Scale(self, from_=0, to=220, orient=tk.HORIZONTAL, length = 600, sliderlength =15, width=20, activebackground='lightpink', label = 'Choisir la gamme de fréquences à étudier: ',font = ('Helvetica', 15), command=self.update_scale_label)
         #self.scale.bind("<ButtonRelease-1>", self.update_scale_label)
         self.scale.pack(side=tk.TOP, fill=tk.X)
         self.scale_label = tk.Label(self, text=f"Gamme de fréquences: {100* self.scale.get()} à {(100* self.scale.get())+100} Hz", font=('Helvetica', 15))
@@ -106,17 +105,6 @@ class fenetre(tk.Tk, DataHandler):
                 print("***********************")
             cursor.close()
    
-    def detecter_outliers_zscore(self):
-        for key in self.coefs_x_y.keys():
-            if not self.coefs_x_y[key]:
-                continue
-            coefficients = np.array([item[0] for item in self.coefs_x_y[key]]).reshape(-1, 1)
-            mean_value = np.mean(coefficients)
-            std_deviation = np.std(coefficients)
-            z_scores = np.abs((coefficients - mean_value) / std_deviation)
-            self.coefs_x_y[key] = [self.coefs_x_y[key][i] for i in range(len(z_scores)) if z_scores[i] < 3 and coefficients[i] <= 1000 * mean_value]      
-        #print(f"dico corrige : {self.coefs_x_y}")
-
 
     def update_plot(self, event = None):
         val = self.scale.get()
