@@ -161,6 +161,7 @@ class MQTTClientGUI:
     def send_data(self):
         self.x += self.distance[0]
         sql_insert.ajouter_mesure(self.connexion_bd, self.series_id, self.temperature[0],self.humidity[0], self.x, self.y)
+        self.fft_coef = sql_insert.detecter_outliers_zscore(self.fft_coef)
         sql_insert.ajouter_mesure_fft(self.connexion_bd, self.id_mesure, self.liste_frequence, self.fft_coef)
         self.log_message(f"Added measurement with ID: {self.id_mesure}")
 
