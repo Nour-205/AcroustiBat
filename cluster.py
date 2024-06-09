@@ -1,92 +1,100 @@
-import matplotlib.pyplot as plt 
-from mpl_toolkits.mplot3d import axes3d
+import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import griddata
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import tkinter as tk
-import mysql.connector as mysql
-from tkinter import *
 from sklearn.preprocessing import StandardScaler
-from statistics import mean as avg
 from sklearn.cluster import DBSCAN
 import data_handler  # Import the shared_data module
 from data_handler import DataHandler
-from matplotlib import cm
+import tkinter as tk
+from sklearn.cluster import KMeans
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-
-
-class ClusterWindow(tk.Toplevel, DataHandler):
+class ClusterWindow(DataHandler):
     def __init__(self, parent):
-        super().__init__(parent)
         DataHandler.__init__(self)  # Initialize the base class
-        self.title("New Window - Visualisation")
-        self.geometry("800x600")
+        self.parent = parent
+        self.parent.title("New Window - Visualisation")
+        self.parent.geometry("800x600")
 
-        self.plot_frame = tk.Frame(self)
+        self.plot_frame = tk.Frame(self.parent)
         self.plot_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.TRUE)
 
         self.scale_clusters = {}
 
-
         self.load_data()  # Load data from file
         self.detecter_clusters_dbscan()  # Detect clusters using DBSCAN
-        self.plot3d_clusters()
-
-
+        self.plot_clusters_2d()
 
     def detecter_clusters_dbscan(self):
         print("Running DBSCAN to detect clusters")
+        all_data = []
         for key in self.coefs_x_y.keys():
-            print(f"Processing key: {key}")
-            if not self.coefs_x_y[key]:
-                continue
             data = np.array(self.coefs_x_y[key])
-            if data.shape[0] < 5:  # Not enough data to form clusters
-                continue
-
+            if data.shape[0] >= 3:  # Ensure enough data to form clusters
+                all_data.append(data)
+            
+        if all_data:
+            all_data = np.vstack(all_data)
+            amplitude_data = all_data[:, 0].reshape(-1, 1)
+            
+            # Use amplitude (z) for clustering
             scaler = StandardScaler()
-            data_scaled = scaler.fit_transform(data[:, :2])
-            dbscan = DBSCAN(eps=0.3, min_samples=10)
-            labels = dbscan.fit_predict(data_scaled)
+            amplitude_data_scaled = scaler.fit_transform(amplitude_data)
 
+            kmeans = KMeans(n_clusters=15, random_state=0)
+            labels = kmeans.fit_predict(amplitude_data_scaled)
+            # DBSCAN with adjusted parameters
+            
+            
             clusters = {}
-            for label, point in zip(labels, data):
+            for label, point in zip(labels, all_data):
                 if label not in clusters:
                     clusters[label] = []
                 clusters[label].append(point)
-            self.coefs_x_y[key] = clusters
-        print(f"Completed DBSCAN, coefs_x_y keys: {self.coefs_x_y.keys()}")
+            self.scale_clusters = clusters
+            print("Clusters formed: ", self.scale_clusters.items())  # Debug print
+        else:
+            print("No data to cluster")
 
-    def plot3d_clusters(self):
+    def plot_clusters_2d(self):
         for widget in self.plot_frame.winfo_children():
             widget.destroy()
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        
-        for key in self.coefs_x_y.keys():
-            scale_clusters = self.coefs_x_y[key]
-            colors = plt.cm.rainbow(np.linspace(0, 1, len(scale_clusters)))
-            for (cluster, color) in zip(scale_clusters.values(), colors):
-                print(f"scale cluster values : {scale_clusters.values()}")
-                x_data = [item[1] for item in cluster]
-                y_data = [item[2] for item in cluster]
-                z_data = [item[0] for item in cluster]
-                print(f"Plotting cluster with {len(x_data)} points")
-                ax.scatter(x_data, y_data, z_data, color=color, s=10, alpha=0.5)
+        fig, ax = plt.subplots()
 
-        ax.set_xlabel("coordonnée x")
-        ax.set_ylabel("coordonnée y")
-        ax.set_zlabel("amplitude")
-        ax.set_title("Clusters de la gamme de fréquences sélectionnée")
+        colormap = plt.get_cmap("rainbow", len(self.scale_clusters))
+        colors = [colormap(i) for i in range(len(self.scale_clusters))]
+        
+        for cluster_label, cluster_points in self.scale_clusters.items():
+            cluster_points = np.array(cluster_points)
+            amplitudes = cluster_points[:, 0]
+            random_x = np.random.rand(len(amplitudes)) * 100  # Random x-values for better cluster visualization
+            heart_point = np.mean(amplitudes)
+            sorted_indices = np.argsort(np.abs(amplitudes - heart_point))
+            sorted_amplitudes = amplitudes[sorted_indices]
+            num_points = len(sorted_amplitudes)
+            
+
+            random_x = np.random.rand(len(amplitudes)) * 100  # Random x-values for better cluster visualization
+
+            # Plot all points
+            plt.scatter(random_x, sorted_amplitudes, color=colors[cluster_label % len(colors)], s=10, alpha=0.5)
+
+            # Highlight the heart point (mean amplitude)
+            heart_index = np.argmin(np.abs(sorted_amplitudes - heart_point))
+            plt.scatter(random_x[heart_index], sorted_amplitudes[heart_index], color=colors[cluster_label % len(colors)], s=100, edgecolor='black')
+        ax.set_xlabel("Random Index")
+        ax.set_yscale('log')
+        ax.set_ylabel("Amplitude")
+        ax.set_title("Clusters of the Selected Frequency Range")
+
         
         canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-
-
 if __name__ == "__main__":
+    import tkinter as tk
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
     root = tk.Tk()
     app = ClusterWindow(root)
     root.mainloop()
