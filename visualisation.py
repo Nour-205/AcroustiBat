@@ -379,36 +379,40 @@ class CustomRangeWindow(tk.Toplevel, DataHandler):
 
 
     def fetch_data(self, min_freq, max_freq):
-        liste = []
+        aggregated_data = []
         print(f"Fetching data for frequency range: {min_freq} Hz to {max_freq} Hz")
         print(f"Available keys in coefs_x_y: {list(self.coefs_x_y.keys())}")
         for freq, vals in self.coefs_x_y.items():
             key_min_freq = freq*100
             key_max_freq = key_min_freq + 100
             if min_freq <= key_max_freq and key_min_freq <= max_freq:
-                liste.extend(vals)
-            print(f"Fetched {len(liste)} data points")
-        return self.interpolate(liste)
+                aggregated_data.extend(vals)
+            print(f"Fetched {len(aggregated_data)} data points")
+        return self.interpolate(aggregated_data)
 
     
     def interpolate(self, data):
         if not data:
             return []
-        X = np.array([d[1] for d in data])
-        Y = np.array([d[2] for d in data])
-        Z = np.array([d[0] for d in data])
+        summed_data = {}
+        counts = {}
 
-        xi = np.linspace(min(X), max(X), 300)
-        yi = np.linspace(min(Y), max(Y), 300)
-        Xi, Yi = np.meshgrid(xi, yi)
+        # Sum the coefficients for each (x, y) point
+        for coef, x, y in data:
+            if (x, y) in summed_data:
+                summed_data[(x, y)] += coef
+                counts[(x, y)] += 1
+            else:
+                summed_data[(x, y)] = coef
+                counts[(x, y)] = 1
 
-        # Perform interpolation
-        Zi = griddata((X, Y), Z, (Xi, Yi), method='cubic')
-        return [(Zi[j, i], xi[i], yi[j]) for i in range(len(xi)) for j in range(len(yi)) if not np.isnan(Zi[j, i])]
+        # Calculate the average coefficients for each (x, y) point
+        aggregated_data = [(summed_data[(x, y)] / counts[(x, y)], x, y) for (x, y) in summed_data]
 
+        print(f"Aggregated data points: {aggregated_data}")
+        return aggregated_data
+        
     
-
-
 
     def create3dplot(self):
         liste = self.liste
@@ -449,7 +453,7 @@ class CustomRangeWindow(tk.Toplevel, DataHandler):
         fig = plt.figure()
         axe = fig.add_subplot(111, projection='3d')
         surface = axe.plot_surface(Xi, Yi, Zi, cmap=cm.coolwarm)
-        axe.scatter(x, y, z, color='r', s=1, alpha=0.5)
+        axe.scatter(x, y, z, color='r', s=10, alpha=0.5)
         fig.colorbar(surface, shrink=0.5, aspect=5)
         axe.set_xlabel("coordonnée x")
         axe.set_ylabel("coordonnée y")
