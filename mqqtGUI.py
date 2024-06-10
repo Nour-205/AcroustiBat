@@ -4,6 +4,7 @@ from tkinter import simpledialog
 import paho.mqtt.client as mqtt
 import sql_insert
 import json
+from tkinter import scrolledtext
 
 class MQTTClientGUI:
     def __init__(self, root):
@@ -38,7 +39,7 @@ class MQTTClientGUI:
         self.fft_button = tk.Button(root, text="Send FFT", command=self.send_fft)
         self.fft_button.pack()
 
-        self.messages_text = tk.Text(root, state='disabled', height=10)
+        self.messages_text = scrolledtext.ScrolledText(root, state='disabled', height=10)
         self.messages_text.pack()
 
         # MQTT Callbacks
@@ -71,6 +72,7 @@ class MQTTClientGUI:
     def log_message(self, message):
         self.messages_text.config(state='normal')
         self.messages_text.insert(tk.END, message + "\n")
+        self.messages_text.yview(tk.END)
         self.messages_text.config(state='disabled')
 
     def connect(self):
