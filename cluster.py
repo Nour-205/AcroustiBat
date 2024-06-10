@@ -41,7 +41,7 @@ class ClusterWindow(DataHandler):
             scaler = StandardScaler()
             amplitude_data_scaled = scaler.fit_transform(amplitude_data)
 
-            kmeans = KMeans(n_clusters=10, random_state=0)
+            kmeans = KMeans(n_clusters=8, random_state=0)
             labels = kmeans.fit_predict(amplitude_data_scaled)
             # DBSCAN with adjusted parameters
             
